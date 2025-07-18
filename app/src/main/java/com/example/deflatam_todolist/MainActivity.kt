@@ -1,9 +1,10 @@
 package com.example.deflatam_todolist
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
-import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.TextView
@@ -26,7 +27,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var checkBoxTareasPendientes: RadioButton
     private lateinit var checkBoxTareasCompletadas: RadioButton
-    private lateinit var checkBoxTodasTareas: RadioButton
 
     private var tareas = mutableListOf<Tarea>()
 
@@ -48,7 +48,34 @@ class MainActivity : AppCompatActivity() {
         txtTareasPendientes = findViewById(R.id.txtTareasPendientes)
         checkBoxTareasPendientes = findViewById(R.id.checkbox_tarea_pendiente)
         checkBoxTareasCompletadas = findViewById(R.id.checkbox_tarea_completada)
-        checkBoxTodasTareas = findViewById(R.id.checkbox_tarea_todo)
+
+        // Configurar el listener para la acción del editor del EditText
+        edtxtTarea.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_NULL) {
+
+                when {
+                    edtxtTarea.text.isEmpty() -> {
+                        sms("Ingrese una tarea")
+                        return@OnEditorActionListener true
+                    }
+
+                    edtxtTarea.text.length > 150 -> {
+                        sms("La tarea no puede tener mas de 150 caracteres")
+                        return@OnEditorActionListener true
+                    }
+
+                    edtxtTarea.text.length < 3 -> {
+                        sms("La tarea debe tener al menos 3 caracteres")
+                        return@OnEditorActionListener true
+                    }
+                }
+                addNewTareaToRecyclerView()
+                getTareasPendientes()
+                edtxtTarea.editableText.clear()
+                return@OnEditorActionListener true // Indica que el evento ha sido consumido
+            }
+            false // Indica que el evento no ha sido consumido
+        })
     }
 
     private fun initButton() {
@@ -107,6 +134,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    @SuppressLint("SetTextI18n")
     private fun getTareasPendientes() {
         val tareasPendientes = tareas.filter { !it.isCompletada }
         if (tareasPendientes.isEmpty()) {
@@ -118,7 +146,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkBoxFunctionality() {
-        checkBoxTodasTareas.isChecked = true
+        checkBoxTareasPendientes.isChecked = true
         checkBoxTareasPendientes.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 tareasAdapter.obtenerTareasPendientes()
@@ -128,12 +156,6 @@ class MainActivity : AppCompatActivity() {
         checkBoxTareasCompletadas.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 tareasAdapter.obtenerTareasCompletadas()
-            }
-            getTareasPendientes()
-        }
-        checkBoxTodasTareas.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                tareasAdapter.reestablecerTareas()
             }
             getTareasPendientes()
         }

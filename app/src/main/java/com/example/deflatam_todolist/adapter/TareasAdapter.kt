@@ -1,5 +1,6 @@
 package com.example.deflatam_todolist.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,13 +10,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.deflatam_todolist.R
 import com.example.deflatam_todolist.model.Tarea
 
+@SuppressLint("NotifyDataSetChanged")
 class TareasAdapter(
     private var tareas: MutableList<Tarea>,
-    private val onTareaChecked: (tarea: Tarea) -> Unit,
+    private val onTareaChecked: () -> Unit,
 ) :
     RecyclerView.Adapter<TareasAdapter.TareaViewHolder>() {
 
-        private var tareasALmacenadas = mutableListOf<Tarea>()
+    private var tareasALmacenadas = mutableListOf<Tarea>()
 
     //Coloca variables aca
     class TareaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -50,10 +52,10 @@ class TareasAdapter(
             tarea.isCompletada = isChecked
             if (tarea.isCompletada) {
                 holder.txtCompletada.visibility = View.VISIBLE
-            }else{
+            } else {
                 holder.txtCompletada.visibility = View.GONE
             }
-            onTareaChecked(tarea)
+            onTareaChecked()
         }
 
         holder.btnEditarTarea.setOnClickListener {
@@ -74,30 +76,30 @@ class TareasAdapter(
         notifyItemInserted(0)
     }
 
-    fun obtenerTareasPendientes(){
+    fun obtenerTareasPendientes() {
         val tareasPendientes = tareas.filter { !it.isCompletada }
         tareas.clear()
         tareas.addAll(tareasPendientes)
         notifyDataSetChanged()
     }
 
-    fun obtenerTareasCompletadas(){
+    fun obtenerTareasCompletadas() {
         val tareasCompletadas = tareas.filter { it.isCompletada }
         tareas.clear()
         tareas.addAll(tareasCompletadas)
         notifyDataSetChanged()
     }
 
-    fun reestablecerTareas(){
+    fun reestablecerTareas() {
         tareas.clear()
         tareas.addAll(tareasALmacenadas)
-        notifyDataSetChanged()
     }
 
-    fun modificarTarea(position: Int,descripcion: String){
+
+    fun modificarTarea(position: Int, descripcion: String) {
         tareas[position].descripcion = descripcion
         tareasALmacenadas[position].descripcion = descripcion
-        notifyItemChanged(0)
+        notifyDataSetChanged()
     }
 
 }

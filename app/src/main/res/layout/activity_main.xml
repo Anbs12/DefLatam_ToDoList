@@ -24,7 +24,8 @@
         android:layout_gravity="center"
         android:layout_margin="12dp"
         android:gravity="center"
-        android:hint="Ingrese una tarea" />
+        android:hint="Ingrese una tarea"
+        android:imeOptions="actionDone" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -36,29 +37,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <RadioButton
-                android:id="@+id/checkbox_tarea_todo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Todo"/>
+
             <RadioButton
                 android:id="@+id/checkbox_tarea_pendiente"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pendientes"/>
+                android:text="Pendientes" />
 
             <RadioButton
                 android:id="@+id/checkbox_tarea_completada"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Completada"/>
+                android:text="Completada" />
         </RadioGroup>
 
 
     </LinearLayout>
-
-
-
 
 
     <Button
@@ -68,7 +62,7 @@
         android:layout_gravity="center"
         android:layout_margin="4dp"
         android:text="Agregar tarea"
-        android:visibility="visible"/>
+        android:visibility="visible" />
 
     <!--Texto de tareas pendientes y cantidad de tarea-->
     <TextView

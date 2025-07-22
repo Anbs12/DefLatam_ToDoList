@@ -7,11 +7,11 @@ completadas y eliminar tareas.
 
  Funcionalidades Requeridas
  
- - Agregar nuevas tareas mediante un EditText y botón
- - Mostrar lista de tareas en RecyclerView
- - Marcar/desmarcar tareas como completadas (checkbox)
- - Eliminar tareas con deslizamiento (swipe) o botón
- - Contador de tareas pendientes
+ - Agregar nuevas tareas mediante un EditText y botón ✅
+ - Mostrar lista de tareas en RecyclerView ✅
+ - Marcar/desmarcar tareas como completadas (checkbox) ✅
+ - Eliminar tareas con deslizamiento (swipe) o botón ✅
+ - Contador de tareas pendientes ✅
  
  Estructura de Archivos
  app/src/main/java/com/tuapp/todolist/
@@ -35,7 +35,7 @@ completadas y eliminar tareas.
  └── item_tarea.xml
  
  Retos Adicionales
- - Ordenar tareas por fecha de creación
- - Filtrar tareas (mostrar solo pendientes/completadas)
-- Editar tareas existentes
-- Persistir datos usando SharedPreferences
+ - Ordenar tareas por fecha de creación ✅
+ - Filtrar tareas (mostrar solo pendientes/completadas)❌
+- Editar tareas existentes ✅
+- Persistir datos usando SharedPreferences ✅

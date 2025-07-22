@@ -3,10 +3,8 @@ package com.example.deflatam_todolist
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
-import android.widget.RadioButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.deflatam_todolist.adapter.TareasAdapter
 import com.example.deflatam_todolist.model.Tarea
 import com.example.deflatam_todolist.utils.SwipeToDeleteCallback
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,141 +23,116 @@ class MainActivity : AppCompatActivity() {
     private lateinit var edtxtTarea: EditText
     private lateinit var txtTareasPendientes: TextView
     private lateinit var recyclerView: RecyclerView
-    private lateinit var tareasAdapter: TareasAdapter
 
-    private lateinit var checkBoxTareasPendientes: RadioButton
-    private lateinit var checkBoxTareasCompletadas: RadioButton
+    private var listaDeTareas = mutableListOf<Tarea>()
 
-    private var tareas = mutableListOf<Tarea>()
+    /** Serializa las tareas.*/
+    private val gson = Gson()
 
+    private val tareasAdapter by lazy {
+        TareasAdapter(listaDeTareas, { id, isCompletada ->
+            listaDeTareas.forEach { tarea ->
+                if (tarea.id == id) {
+                    tarea.isCompletada = isCompletada
+                }
+            }
+            guardarTareas()
+            updateTareasPendientesNumberUi()
+        })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
         initComponents()
-        initButton()
         initRecyclerView()
-        getTareasPendientes()
-        checkBoxFunctionality()
+        cargarTareasGuardadas()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Guarda las tareas pendientes antes de salir de la actividad
+        guardarTareas()
     }
 
     private fun initComponents() {
         edtxtTarea = findViewById(R.id.input_ingreseTarea)
         txtTareasPendientes = findViewById(R.id.txtTareasPendientes)
-        checkBoxTareasPendientes = findViewById(R.id.checkbox_tarea_pendiente)
-        checkBoxTareasCompletadas = findViewById(R.id.checkbox_tarea_completada)
-
-        // Configurar el listener para la acción del editor del EditText
-        edtxtTarea.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_NULL) {
-
-                when {
-                    edtxtTarea.text.isEmpty() -> {
-                        sms("Ingrese una tarea")
-                        return@OnEditorActionListener true
-                    }
-
-                    edtxtTarea.text.length > 150 -> {
-                        sms("La tarea no puede tener mas de 150 caracteres")
-                        return@OnEditorActionListener true
-                    }
-
-                    edtxtTarea.text.length < 3 -> {
-                        sms("La tarea debe tener al menos 3 caracteres")
-                        return@OnEditorActionListener true
-                    }
-                }
-                addNewTareaToRecyclerView()
-                getTareasPendientes()
-                edtxtTarea.editableText.clear()
-                return@OnEditorActionListener true // Indica que el evento ha sido consumido
-            }
-            false // Indica que el evento no ha sido consumido
-        })
+        initListeners()
     }
 
-    private fun initButton() {
+    private fun initListeners() {
         btnAgregarTarea = findViewById(R.id.btnAgregarTarea)
         btnAgregarTarea.setOnClickListener {
-            when {
-                edtxtTarea.text.isEmpty() -> {
-                    sms("Ingrese una tarea")
-                    return@setOnClickListener
-                }
-
-                edtxtTarea.text.length > 151 -> {
-                    sms("La tarea no puede tener mas de 150 caracteres")
-                    return@setOnClickListener
-                }
-
-                edtxtTarea.text.length < 3 -> {
-                    sms("La tarea debe tener al menos 3 caracteres")
-                    return@setOnClickListener
-                }
-            }
-            addNewTareaToRecyclerView()
-            getTareasPendientes()
-            edtxtTarea.editableText.clear()
+            agregarNuevaTarea()
         }
     }
 
     private fun initRecyclerView() {
-        tareasAdapter = TareasAdapter(tareas) {
-            getTareasPendientes()
-        }
         recyclerView = findViewById(R.id.recyclerView_tareas)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = tareasAdapter
         swipeHandler()
     }
 
+    /** Elimina tarea con swipe.*/
     private fun swipeHandler() {
         val swipeHandler = SwipeToDeleteCallback { pos ->
             tareasAdapter.eliminarTarea(pos)
-            getTareasPendientes()
+            //listaDeTareas.removeAt(pos)
+            updateTareasPendientesNumberUi()
+            guardarTareas()
+            sms("Tarea eliminada")
         }
         ItemTouchHelper(swipeHandler).attachToRecyclerView(recyclerView)
     }
 
-    private fun addNewTareaToRecyclerView() {
+    private fun agregarNuevaTarea() {
         val descripcion = edtxtTarea.text.toString()
-        val conteoTittleId = tareas.size + 1
-        tareasAdapter.agregarTarea(
-            Tarea(
-                id = conteoTittleId.toLong(),
-                titulo = "Tarea $conteoTittleId",
-                descripcion = descripcion,
-                isCompletada = false
-            )
-        )
+        if (descripcion.isNotEmpty()) {
+            val nuevaTarea = Tarea(descripcion = descripcion)
+            //listaDeTareas.add(0, nuevaTarea)
+            tareasAdapter.agregarTarea(nuevaTarea)
+            edtxtTarea.text.clear()
+            updateTareasPendientesNumberUi()
+            guardarTareas()
+            recyclerView.scrollToPosition(0)
+        } else {
+            Toast.makeText(this, "La descripción no puede estar vacía", Toast.LENGTH_SHORT).show()
+        }
     }
 
+    /** Guarda las tareas.*/
+    private fun guardarTareas() {
+        val sharedPreferences = getSharedPreferences("ToDoListPrefs", MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val jsonPendientes = gson.toJson(listaDeTareas)
+        editor.putString("lista_tareas_pendientes", jsonPendientes)
+        editor.apply()
+    }
+
+    /** Carga las tareas guardadas.*/
+    private fun cargarTareasGuardadas() {
+        val sharedPreferences = getSharedPreferences("ToDoListPrefs", MODE_PRIVATE)
+        val jsonPendientes = sharedPreferences.getString("lista_tareas_pendientes", null)
+        if (jsonPendientes != null) {
+            val type = object : TypeToken<MutableList<Tarea>>() {}.type
+            val tareasGuardadas: MutableList<Tarea> = gson.fromJson(jsonPendientes, type)
+            listaDeTareas.addAll(tareasGuardadas)
+        }
+        updateTareasPendientesNumberUi()
+    }
+
+    /** Actualiza el numero de tareas pendientes.*/
     @SuppressLint("SetTextI18n")
-    private fun getTareasPendientes() {
-        val tareasPendientes = tareas.filter { !it.isCompletada }
+    private fun updateTareasPendientesNumberUi() {
+        val tareasPendientes = listaDeTareas.filter { !it.isCompletada }
         if (tareasPendientes.isEmpty()) {
             txtTareasPendientes.visibility = View.GONE
         } else {
             txtTareasPendientes.visibility = View.VISIBLE
-            txtTareasPendientes.text = "Tienes ${tareasPendientes.size} tareas pendientes."
-        }
-    }
-
-    private fun checkBoxFunctionality() {
-        checkBoxTareasPendientes.isChecked = true
-        checkBoxTareasPendientes.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                tareasAdapter.obtenerTareasPendientes()
-            }
-            getTareasPendientes()
-        }
-        checkBoxTareasCompletadas.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                tareasAdapter.obtenerTareasCompletadas()
-            }
-            getTareasPendientes()
+            txtTareasPendientes.text = "Tienes ${tareasPendientes.size} listaDeTareas pendientes."
         }
     }
 

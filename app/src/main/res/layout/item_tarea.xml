@@ -20,15 +20,6 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/txtTitulo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLength="20"
-                android:maxLines="1"
-                android:text="Tarea Nro 1"
-                android:textSize="16sp" />
-
-            <TextView
                 android:id="@+id/txtCompletada"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -46,7 +37,19 @@
                 android:maxLines="3"
                 android:paddingTop="8dp"
                 android:text="DescripcionDescripcionDescripcionDescripcionDescripcionDescripcionDescripcionDescripDescripcionDescripcionDescripcionDescripcionDescripciondescripcion."
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:visibility="visible"/>
+
+            <EditText
+                android:id="@+id/txtDescripcionEditable"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLength="151"
+                android:maxLines="3"
+                android:paddingTop="8dp"
+                android:text="Soy editable."
+                android:textSize="12sp"
+                android:visibility="visible"/>
 
         </LinearLayout>
 
@@ -72,6 +75,23 @@
                 android:text="Editar"
                 android:visibility="visible"
                 android:textSize="8sp"/>
+            <Button
+                android:id="@+id/btnConfirmarEdicionTarea"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="Confirmar cambios"
+                android:visibility="gone"
+                android:textSize="8sp"/>
+            <Button
+                android:id="@+id/btnEditarTareaCancelar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="Cancelar?"
+                android:visibility="gone"
+                android:textSize="8sp"
+                android:backgroundTint="@color/red"/>
 
         </LinearLayout>
 

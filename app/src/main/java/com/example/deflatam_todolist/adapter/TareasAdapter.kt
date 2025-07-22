@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.deflatam_todolist.R
@@ -12,20 +14,21 @@ import com.example.deflatam_todolist.model.Tarea
 
 @SuppressLint("NotifyDataSetChanged")
 class TareasAdapter(
-    private var tareas: MutableList<Tarea>,
-    private val onTareaChecked: () -> Unit,
+    private var listaDeTareas: MutableList<Tarea>,
+    private val onTareaChecked: (Int, isCompletada: Boolean) -> Unit
 ) :
     RecyclerView.Adapter<TareasAdapter.TareaViewHolder>() {
 
-    private var tareasALmacenadas = mutableListOf<Tarea>()
 
     //Coloca variables aca
     class TareaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val titulo = itemView.findViewById<TextView>(R.id.txtTitulo)
         val txtCompletada = itemView.findViewById<TextView>(R.id.txtCompletada)
         val txtDescripcion = itemView.findViewById<TextView>(R.id.txtDescripcion)
         val checkBox = itemView.findViewById<CheckBox>(R.id.checkbox_tarea)
-        val btnEditarTarea = itemView.findViewById<TextView>(R.id.btnEditarTarea)
+        val btnEditarTarea = itemView.findViewById<Button>(R.id.btnEditarTarea)
+        val txtDescripcionEditable = itemView.findViewById<EditText>(R.id.txtDescripcionEditable)
+        val btnEditarTareaCancelar = itemView.findViewById<Button>(R.id.btnEditarTareaCancelar)
+        val btnConfirmarEdicionTarea = itemView.findViewById<Button>(R.id.btnConfirmarEdicionTarea)
     }
 
 
@@ -42,64 +45,81 @@ class TareasAdapter(
         holder: TareaViewHolder,
         position: Int
     ) {
-        val tarea = tareas[position]
-        holder.titulo.text = tarea.titulo
+        val tarea = listaDeTareas[position]
+        //Asignamos datos
         holder.txtDescripcion.text = tarea.descripcion
         holder.checkBox.isChecked = tarea.isCompletada
-        holder.txtCompletada.visibility = View.GONE
+        println("Fecha de este card: ${tarea.descripcion} " + tarea.fechaCreacion)
 
+        //Operaciones de los listener
+        holder.txtCompletada.visibility = if (tarea.isCompletada) View.VISIBLE else View.GONE
+        holder.txtDescripcionEditable.setText(tarea.descripcion)
+        holder.txtDescripcionEditable.visibility = View.GONE
+
+        //Checkbox de true o false de la tarea
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
             tarea.isCompletada = isChecked
-            if (tarea.isCompletada) {
-                holder.txtCompletada.visibility = View.VISIBLE
-            } else {
-                holder.txtCompletada.visibility = View.GONE
-            }
-            onTareaChecked()
+            //actualizarTareaCompletada(position, isChecked)
+            onTareaChecked(tarea.id, isChecked)
+            holder.txtCompletada.visibility = if (tarea.isCompletada) View.VISIBLE else View.GONE
         }
 
+        //Edicion de tarea
         holder.btnEditarTarea.setOnClickListener {
+            //Aparecen los objetos para editar
+            holder.btnEditarTareaCancelar.visibility = View.VISIBLE
+            holder.btnConfirmarEdicionTarea.visibility = View.VISIBLE
+            holder.txtDescripcionEditable.visibility = View.VISIBLE
+            holder.txtDescripcionEditable.setText("")
+
+            //Desaparecen objetos que no se necesitan
+            holder.txtDescripcion.visibility = View.GONE
+            holder.btnEditarTarea.visibility = View.GONE
+        }
+
+        //Aparece al presionar el boton Editar
+        holder.btnConfirmarEdicionTarea.setOnClickListener {
+            //Desaparecen los objetos de edicion
+            holder.txtDescripcionEditable.visibility = View.GONE
+            holder.btnEditarTareaCancelar.visibility = View.GONE
+            holder.btnConfirmarEdicionTarea.visibility = View.GONE
+            //Aparecen objetos con descripcion actualizada
+            holder.txtDescripcion.visibility = View.VISIBLE
+            holder.btnEditarTarea.visibility = View.VISIBLE
+
+            //Actualizamos la descripcion
+            val nuevaDescripcion = holder.txtDescripcionEditable.text.toString()
+            modificarTarea(position, nuevaDescripcion)
+            holder.txtDescripcion.text = nuevaDescripcion
+        }
+
+        //Aparece al presionar el boton Editar
+        holder.btnEditarTareaCancelar.setOnClickListener {
+            //Aparecen objetos con descripcion anterior
+            holder.txtDescripcion.visibility = View.VISIBLE
+            holder.btnEditarTarea.visibility = View.VISIBLE
+            //Desaparecen objetos para edicion de tarea
+            holder.btnConfirmarEdicionTarea.visibility = View.GONE
+            holder.txtDescripcionEditable.visibility = View.GONE
+            holder.btnEditarTareaCancelar.visibility = View.GONE
         }
     }
 
-    override fun getItemCount() = tareas.size
-
-    fun eliminarTarea(pos: Int) {
-        tareas.removeAt(pos)
-        tareasALmacenadas.removeAt(pos)
-        notifyItemRemoved(pos)
-    }
+    override fun getItemCount() = listaDeTareas.size
 
     fun agregarTarea(tarea: Tarea) {
-        tareas.add(0, tarea)
-        tareasALmacenadas.add(0, tarea)
+        listaDeTareas.add(0, tarea)
         notifyItemInserted(0)
     }
 
-    fun obtenerTareasPendientes() {
-        val tareasPendientes = tareas.filter { !it.isCompletada }
-        tareas.clear()
-        tareas.addAll(tareasPendientes)
-        notifyDataSetChanged()
+    fun eliminarTarea(position: Int) {
+        listaDeTareas.removeAt(position)
+        notifyItemRemoved(position)
     }
-
-    fun obtenerTareasCompletadas() {
-        val tareasCompletadas = tareas.filter { it.isCompletada }
-        tareas.clear()
-        tareas.addAll(tareasCompletadas)
-        notifyDataSetChanged()
-    }
-
-    fun reestablecerTareas() {
-        tareas.clear()
-        tareas.addAll(tareasALmacenadas)
-    }
-
 
     fun modificarTarea(position: Int, descripcion: String) {
-        tareas[position].descripcion = descripcion
-        tareasALmacenadas[position].descripcion = descripcion
-        notifyDataSetChanged()
+        listaDeTareas[position].descripcion = descripcion
+        notifyItemRangeChanged(position, listaDeTareas.size)
     }
 
 }

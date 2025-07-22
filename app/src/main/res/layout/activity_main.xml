@@ -27,32 +27,6 @@
         android:hint="Ingrese una tarea"
         android:imeOptions="actionDone" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
-
-        <RadioGroup
-            android:id="@+id/radioGroup_tareas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/checkbox_tarea_pendiente"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Pendientes" />
-
-            <RadioButton
-                android:id="@+id/checkbox_tarea_completada"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Completada" />
-        </RadioGroup>
-
-
-    </LinearLayout>
 
 
     <Button

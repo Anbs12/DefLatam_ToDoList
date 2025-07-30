@@ -1,4 +1,8 @@
-Ejercicio 2: Lista de Tareas (To-Do List)
+# Para ejecutar
+
+Compilar e instalar app en movil o emulador.
+
+# Ejercicio 2: Lista de Tareas (To-Do List)
 
  Nivel: Básico-Intermedio
  Conceptos: RecyclerView, Adapter, ViewHolder, Listas

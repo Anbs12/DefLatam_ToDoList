@@ -40,6 +40,6 @@ completadas y eliminar tareas.
  
  Retos Adicionales
  - Ordenar tareas por fecha de creación ✅
- - Filtrar tareas (mostrar solo pendientes/completadas)❌
+ - Filtrar tareas (mostrar solo pendientes/completadas)✅
 - Editar tareas existentes ✅
 - Persistir datos usando SharedPreferences ✅

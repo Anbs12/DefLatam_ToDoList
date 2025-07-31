@@ -24,6 +24,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtTareasPendientes: TextView
     private lateinit var recyclerView: RecyclerView
 
+    private lateinit var btnFiltroPendienteDialog: Button
+    private lateinit var btnFiltroCompletadasDialog: Button
+
     private var listaDeTareas = mutableListOf<Tarea>()
 
     /** Serializa las tareas.*/
@@ -66,6 +69,14 @@ class MainActivity : AppCompatActivity() {
         btnAgregarTarea = findViewById(R.id.btnAgregarTarea)
         btnAgregarTarea.setOnClickListener {
             agregarNuevaTarea()
+        }
+        btnFiltroPendienteDialog = findViewById(R.id.btnFiltroPendientes)
+        btnFiltroPendienteDialog.setOnClickListener {
+            filtrarTareasPendientesDialog()
+        }
+        btnFiltroCompletadasDialog = findViewById(R.id.btnFiltroCompletadas)
+        btnFiltroCompletadasDialog.setOnClickListener {
+            filtrarTareasCompletadasDialog()
         }
     }
 
@@ -139,4 +150,19 @@ class MainActivity : AppCompatActivity() {
     private fun sms(text: String) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
     }
+
+    private fun filtrarTareasCompletadasDialog(){
+        val tareasCompletadas = listaDeTareas.filter { it.isCompletada }
+        val dialogFragment = TareasListDialogFragment(tareasCompletadas, "Completadas")
+        dialogFragment.show(supportFragmentManager, "TareasCompletadasDialogFragment")
+    }
+
+    private fun filtrarTareasPendientesDialog() {
+        val tareasPendientes = listaDeTareas.filter { !it.isCompletada }
+        val dialogFragment = TareasListDialogFragment(tareasPendientes, "Pendientes")
+        dialogFragment.show(supportFragmentManager, "TareasCompletadasDialogFragment")
+    }
+
 }
+
+

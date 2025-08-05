@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.deflatam_todolist.R
 import com.example.deflatam_todolist.model.Tarea
+import com.google.android.material.textfield.TextInputLayout
 
 @SuppressLint("NotifyDataSetChanged")
 class TareasAdapter(
@@ -29,6 +30,7 @@ class TareasAdapter(
         val txtDescripcionEditable = itemView.findViewById<EditText>(R.id.txtDescripcionEditable)
         val btnEditarTareaCancelar = itemView.findViewById<Button>(R.id.btnEditarTareaCancelar)
         val btnConfirmarEdicionTarea = itemView.findViewById<Button>(R.id.btnConfirmarEdicionTarea)
+        val inputLayout_edText = itemView.findViewById<TextInputLayout>(R.id.input_layout_descripcionEditable)
     }
 
 
@@ -56,6 +58,8 @@ class TareasAdapter(
         holder.txtDescripcionEditable.setText(tarea.descripcion)
         holder.txtDescripcionEditable.visibility = View.GONE
 
+        holder.inputLayout_edText.visibility = View.GONE
+
         //Checkbox de true o false de la tarea
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
             tarea.isCompletada = isChecked
@@ -71,6 +75,7 @@ class TareasAdapter(
             holder.btnConfirmarEdicionTarea.visibility = View.VISIBLE
             holder.txtDescripcionEditable.visibility = View.VISIBLE
             holder.txtDescripcionEditable.setText("")
+            holder.inputLayout_edText.visibility = View.VISIBLE
 
             //Desaparecen objetos que no se necesitan
             holder.txtDescripcion.visibility = View.GONE
@@ -83,6 +88,7 @@ class TareasAdapter(
             holder.txtDescripcionEditable.visibility = View.GONE
             holder.btnEditarTareaCancelar.visibility = View.GONE
             holder.btnConfirmarEdicionTarea.visibility = View.GONE
+            holder.inputLayout_edText.visibility = View.GONE
             //Aparecen objetos con descripcion actualizada
             holder.txtDescripcion.visibility = View.VISIBLE
             holder.btnEditarTarea.visibility = View.VISIBLE

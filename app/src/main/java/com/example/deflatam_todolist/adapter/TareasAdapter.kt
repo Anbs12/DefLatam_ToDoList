@@ -20,9 +20,9 @@ class TareasAdapter(
 ) :
     RecyclerView.Adapter<TareasAdapter.TareaViewHolder>() {
 
-
-    //Coloca variables aca
     class TareaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        //Coloca variables de inicializacion de elementos XML acá ⬇️
+
         val txtCompletada = itemView.findViewById<TextView>(R.id.txtCompletada)
         val txtDescripcion = itemView.findViewById<TextView>(R.id.txtDescripcion)
         val checkBox = itemView.findViewById<CheckBox>(R.id.checkbox_tarea)
@@ -30,84 +30,57 @@ class TareasAdapter(
         val txtDescripcionEditable = itemView.findViewById<EditText>(R.id.txtDescripcionEditable)
         val btnEditarTareaCancelar = itemView.findViewById<Button>(R.id.btnEditarTareaCancelar)
         val btnConfirmarEdicionTarea = itemView.findViewById<Button>(R.id.btnConfirmarEdicionTarea)
-        val inputLayout_edText = itemView.findViewById<TextInputLayout>(R.id.input_layout_descripcionEditable)
+        val inputLayout_edText =
+            itemView.findViewById<TextInputLayout>(R.id.input_layout_descripcionEditable)
     }
 
-
-    //Infla el layout
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TareaViewHolder {
+        //Infla el layout
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_tarea, parent, false)
         return TareaViewHolder(view)
     }
 
-    //Aqui en onBindViewHolder con el holder, asignamos los elementos que
-    // necesitamos ver en el cardview
-    //Y las funciones que creemos en el "ViewHolder"
     override fun onBindViewHolder(
         holder: TareaViewHolder,
         position: Int
     ) {
+        /* Controla elementos del card actual */
+
         val tarea = listaDeTareas[position]
+
         //Asignamos datos
         holder.txtDescripcion.text = tarea.descripcion
         holder.checkBox.isChecked = tarea.isCompletada
-        println("Fecha de este card: ${tarea.descripcion} " + tarea.fechaCreacion)
-
-        //Operaciones de los listener
-        holder.txtCompletada.visibility = if (tarea.isCompletada) View.VISIBLE else View.GONE
         holder.txtDescripcionEditable.setText(tarea.descripcion)
-        holder.txtDescripcionEditable.visibility = View.GONE
 
+        holder.txtCompletada.visibility = if (tarea.isCompletada) View.VISIBLE else View.GONE
+
+        //Desaparece modo editar
+        holder.txtDescripcionEditable.visibility = View.GONE
         holder.inputLayout_edText.visibility = View.GONE
+
+        //-------- Operaciones de los listener ⬇️
 
         //Checkbox de true o false de la tarea
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
             tarea.isCompletada = isChecked
-            //actualizarTareaCompletada(position, isChecked)
             onTareaChecked(tarea.id, isChecked)
             holder.txtCompletada.visibility = if (tarea.isCompletada) View.VISIBLE else View.GONE
         }
 
-        //Edicion de tarea
+        //Activa el modo para editar tarea.
         holder.btnEditarTarea.setOnClickListener {
-            //Aparecen los objetos para editar
-            holder.btnEditarTareaCancelar.visibility = View.VISIBLE
-            holder.btnConfirmarEdicionTarea.visibility = View.VISIBLE
-            holder.txtDescripcionEditable.visibility = View.VISIBLE
-            holder.txtDescripcionEditable.setText("")
-            holder.inputLayout_edText.visibility = View.VISIBLE
-
-            //Desaparecen objetos que no se necesitan
-            holder.txtDescripcion.visibility = View.GONE
-            holder.btnEditarTarea.visibility = View.GONE
+            onEditarTareaSeleccionada(holder)
         }
 
-        //Aparece al presionar el boton Editar
+        //Confirma cambios y actualiza tarea.
         holder.btnConfirmarEdicionTarea.setOnClickListener {
-            //Desaparecen los objetos de edicion
-            holder.txtDescripcionEditable.visibility = View.GONE
-            holder.btnEditarTareaCancelar.visibility = View.GONE
-            holder.btnConfirmarEdicionTarea.visibility = View.GONE
-            holder.inputLayout_edText.visibility = View.GONE
-            //Aparecen objetos con descripcion actualizada
-            holder.txtDescripcion.visibility = View.VISIBLE
-            holder.btnEditarTarea.visibility = View.VISIBLE
-
-            //Actualizamos la descripcion
-            val nuevaDescripcion = holder.txtDescripcionEditable.text.toString()
-            modificarTarea(position, nuevaDescripcion)
-            holder.txtDescripcion.text = nuevaDescripcion
+            onConfirmarEdicionTarea(holder, position)
         }
 
-        //Aparece al presionar el boton Editar
+        //Cancela los cambios y mantiene valor original.
         holder.btnEditarTareaCancelar.setOnClickListener {
-            //Aparecen objetos con descripcion anterior
-            holder.txtDescripcion.visibility = View.VISIBLE
-            holder.btnEditarTarea.visibility = View.VISIBLE
-            //Desaparecen objetos para edicion de tarea
-            holder.btnConfirmarEdicionTarea.visibility = View.GONE
-            holder.txtDescripcionEditable.visibility = View.GONE
-            holder.btnEditarTareaCancelar.visibility = View.GONE
+            onCancelarEdicionTarea(holder)
         }
     }
 
@@ -123,9 +96,55 @@ class TareasAdapter(
         notifyItemRemoved(position)
     }
 
-    fun modificarTarea(position: Int, descripcion: String) {
+    private fun modificarTarea(position: Int, descripcion: String) {
         listaDeTareas[position].descripcion = descripcion
         notifyItemRangeChanged(position, listaDeTareas.size)
+    }
+
+    /**Activa el modo para editar una tarea seleccionada*/
+    private fun onEditarTareaSeleccionada(holder: TareaViewHolder) {
+        //Aparecen los objetos para editar
+        holder.btnEditarTareaCancelar.visibility = View.VISIBLE
+        holder.btnConfirmarEdicionTarea.visibility = View.VISIBLE
+        holder.txtDescripcionEditable.visibility = View.VISIBLE
+        holder.txtDescripcionEditable.setText("")
+        holder.inputLayout_edText.visibility = View.VISIBLE
+
+        //Desaparecen objetos que no se necesitan
+        holder.txtDescripcion.visibility = View.GONE
+        holder.btnEditarTarea.visibility = View.GONE
+    }
+
+    /**Confirma la edicion de la tarea seleccionada y actualiza los cambios*/
+    private fun onConfirmarEdicionTarea(holder: TareaViewHolder, position: Int) {
+
+        //Desaparecen objetos edicion
+        holder.txtDescripcionEditable.visibility = View.GONE
+        holder.btnEditarTareaCancelar.visibility = View.GONE
+        holder.btnConfirmarEdicionTarea.visibility = View.GONE
+        holder.inputLayout_edText.visibility = View.GONE
+
+        //Aparecen objetos con descripcion actualizada
+        holder.txtDescripcion.visibility = View.VISIBLE
+        holder.btnEditarTarea.visibility = View.VISIBLE
+
+        //Actualizamos la descripcion
+        val nuevaDescripcion = holder.txtDescripcionEditable.text.toString()
+        modificarTarea(position, nuevaDescripcion)
+        holder.txtDescripcion.text = nuevaDescripcion
+    }
+
+    /**Cancela los cambios de la tarea seleccionada y mantiene la descripcion original*/
+    private fun onCancelarEdicionTarea(holder: TareaViewHolder) {
+
+        //Aparecen objetos con descripcion anterior
+        holder.txtDescripcion.visibility = View.VISIBLE
+        holder.btnEditarTarea.visibility = View.VISIBLE
+
+        //Desaparecen objetos para edicion de tarea
+        holder.btnConfirmarEdicionTarea.visibility = View.GONE
+        holder.txtDescripcionEditable.visibility = View.GONE
+        holder.btnEditarTareaCancelar.visibility = View.GONE
     }
 
 }
